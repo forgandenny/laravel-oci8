@@ -2,8 +2,9 @@
 
 use Closure;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Builder;
 
-class OracleBuilder extends \Illuminate\Database\Schema\Builder {
+class OracleBuilder extends Builder {
 
 	/**
 	 * Create a new table on the schema.
@@ -42,6 +43,7 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			// if column is autoIncrement set the primary col name
 			if ($column->autoIncrement) {
 				$col = $column->name;
+				$start = isset($column->start) ? $column->start : 1;
 			}
 		}
 
@@ -51,12 +53,11 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			$prefix = $this->connection->getTablePrefix();
 			// create sequence for auto increment
 			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-			$this->connection->createSequence($sequenceName);
+			$this->connection->createSequence($sequenceName, $start);
 	        // create trigger for auto increment work around
 	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
 			$this->connection->createAutoIncrementTrigger($prefix . $table, $col, $triggerName, $sequenceName);
 		}
-
 	}
 
 	/**
